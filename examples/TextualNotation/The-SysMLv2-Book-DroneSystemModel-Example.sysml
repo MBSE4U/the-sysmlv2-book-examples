@@ -1,6 +1,10 @@
 package <DSM> DroneSystemModel {
     doc
-    /* Root package of the Drone System Model
+    /* 
+     *  Root package of the Drone System Model Example model from "The SysML v2 Book" published by MBSE4U.
+     *
+     *  MBSE4U: https://mbse4u.com
+     *  Book on Leanpub: https://leanpub.com/sysmlv2
      *
      * Licensed under the Apache License, Version 2.0 (the "License");
      * you may not use this file except in compliance with the License.
@@ -22,13 +26,9 @@ package <DSM> DroneSystemModel {
     }
     dependency DSPA, DSFA to DSRE;
     package <DSUC> DroneSystem_UseCases;
-    package <DSC> DroneSystem_SystemContext;
-    package <DSFA> 'DroneSystem_Functional Architecture';
-    package <DSD> DroneSystem_Domain {
-        attribute def Coordinate;
-    }
-    package <DSPC> DroneSystem_ProjectContext {
-        private import MBSE::*;
+
+    package <DSP> DroneSystem_Project {
+        private import MBSEMethodology::*;
         occurrence def UAVProject {
             part stakeholders [*] : CommonStakeholder;
             part airTrafficControlAuthority :> stakeholders;
@@ -38,9 +38,9 @@ package <DSM> DroneSystemModel {
                 attribute :>> kind = kind::Expert;
                 attribute :>> contact = "u.av@mbse4u.com";
             }
-            part droneSystemContext : DSRE::DroneSystemContext;
+            part droneSystemContext : DSS::DroneSystemContext;
             requirement uavSystemRequirements : DSRE::TextualRequirements::UAVSystemRequirements {
-                subject :>> theUAV = droneSystemContext.droneSystem;
+                subject :>> theUAV :> droneSystemContext.droneSystem;
                 requirement :>> uavFlightTime {
                     subject :>> theUAV :> droneSystemContext.droneSystem;
                     stakeholder :>> uavExpert = uavSpecialist;
@@ -80,14 +80,22 @@ package <DSM> DroneSystemModel {
             attribute windSpeed :> ISQSpaceTime::speed;
         }
     }
-    package <DSRE> 'DroneSystem_System Requirements' {
-        private import MBSE::*;
-        private import DSPC::*;
-        private import DSBA::*;
+    package <DSD> DroneSystem_Domain {
+        attribute def Coordinate;
+    }
+    package <DSS> DroneSystem_System {
+        private import MBSEMethodology::*;
+        private import DSBA::*;        
+
         part def DroneSystemContext :> CommonUAVSystemContext {
             part droneSystem : DroneSystem :>> uavSystem;
         }
         part def DroneSystem;
+    }
+    package <DSRE> 'DroneSystem_System Requirements' {
+        private import MBSEMethodology::*;
+        private import DSP::*;
+        private import DSBA::*;
         package FormalizedRequirements {
             requirement def UAVSystemRequirements {
                 subject theUAV : CommonUAV;
@@ -160,45 +168,14 @@ package <DSM> DroneSystemModel {
             }
         }
     }
-    package MBSE {
-        part def CommonStakeholder {
-            attribute risk : LevelKind;
-            attribute effort : LevelKind;
-            derived attribute priority : ScalarValues::Integer = risk * effort;
-            attribute kind : StakeholderCategoryKind;
-            attribute contact : ScalarValues::String;
+    package <DSFA> 'DroneSystem_Functional Architecture';    
+    package <DSLA> DroneSystem_LogicalArchitecture {
+        part def DroneSystem {
+            part navigationModule;
+            part flightModule;
+            part missionModule;
         }
-        enum def LevelKind :> ScalarValues::Integer {
-            undefined = 0;
-            low = 1;
-            middle = 2;
-            high = 3;
-        }
-        enum def StakeholderCategoryKind {
-            Expert;
-            RequirementOwner;
-            User;
-            Other;
-        }
-        requirement def CommonRequirement {
-            attribute motivation : ScalarValues::String;
-            attribute priority : LevelKind;
-            attribute stability : StabilityKind;
-            attribute kind : RequirementKind;
-        }
-        enum def StabilityKind {
-            stable;
-            unstable;
-            undefined;
-        }
-        enum def RequirementKind {
-            functional;
-            performance;
-            safety;
-            legal;
-            physical;
-        }
-    }
+    }    
     package <DSPA> 'DroneSystem_Physical Architecture' {
         private import DSRE::*;
         item def Payload {
@@ -336,17 +313,48 @@ package <DSM> DroneSystemModel {
             }
         }
     }
-    package <DSLA> DroneSystem_LogicalArchitecture {
-        part def DroneSystem {
-            part navigationModule;
-            part flightModule;
-            part missionModule;
-        }
-    }
-    doc /**/
 }
 package 'Surveillance Drone Product' {
     private import DSM::DSPA::*;
     part surveillanceDrone : Drone;
     part charger : Charger;
+}
+package MBSEMethodology {
+    part def CommonStakeholder {
+        attribute risk : LevelKind;
+        attribute effort : LevelKind;
+        derived attribute priority : ScalarValues::Integer = risk * effort;
+        attribute kind : StakeholderCategoryKind;
+        attribute contact : ScalarValues::String;
+    }
+    enum def LevelKind :> ScalarValues::Integer {
+        undefined = 0;
+        low = 1;
+        middle = 2;
+        high = 3;
+    }
+    enum def StakeholderCategoryKind {
+        Expert;
+        RequirementOwner;
+        User;
+        Other;
+    }
+    requirement def CommonRequirement {
+        attribute motivation : ScalarValues::String;
+        attribute priority : LevelKind;
+        attribute stability : StabilityKind;
+        attribute kind : RequirementKind;
+    }
+    enum def StabilityKind {
+        stable;
+        unstable;
+        undefined;
+    }
+    enum def RequirementKind {
+        functional;
+        performance;
+        safety;
+        legal;
+        physical;
+    }
 }
