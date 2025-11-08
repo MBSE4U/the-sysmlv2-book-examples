@@ -56,8 +56,8 @@ package <DSM> DroneSystemModel {
             }
             part droneSOI : DSPA::Drone {
                 satisfy uavSystemRequirements.uavFlightTime;
+                satisfy uavSystemRequirements.maximumTakeOffWeight;
             }
-            satisfy uavSystemRequirements.maximumTakeOffWeight by droneSOI;
         }
     }
     package <DSBA> 'DroneSystem_Base Architecture' {
@@ -85,12 +85,39 @@ package <DSM> DroneSystemModel {
     }
     package <DSS> DroneSystem_System {
         private import MBSEMethodology::*;
-        private import DSBA::*;        
-
+        private import DSBA::*;
         part def DroneSystemContext :> CommonUAVSystemContext {
             part droneSystem : DroneSystem :>> uavSystem;
+            part environment : Actors::Environment :>> environment;
+            message heatExchange : HeatFlow from environment.msgHeatSend to droneSystem.msgHeatReceive;
+            flow heatExchangeFlow : HeatInterfaceFlow from environment.heatPort.heatEnergy to droneSystem.heatPort.heatEnergy;
+            flow environment.humidityPort.humidity to droneSystem.humidityPort.humidity;
         }
-        part def DroneSystem;
+        part def DroneSystem :> CommonUAVSystem {
+            port heatPort : ~HeatPort;
+            port humidityPort : ~HumidityPort;
+            event occurrence msgHeatReceive;
+        }
+        port def HeatPort {
+            out item heatEnergy : ISQ::EnergyValue;
+        }
+        port def HumidityPort {
+            out item humidity;
+        }
+        abstract flow def HeatFlow {
+            ref item heat :> ISQ::heat :>> payload;
+        }
+        flow def HeatInterfaceFlow :> HeatFlow {
+            end heatPortSource : HeatPort;
+            end heatPortTarget : HeatPort;
+        }
+        package Actors {
+            part def Environment :> DSBA::'UAV Environment' {
+                port heatPort : HeatPort;
+                port humidityPort : HumidityPort;
+                event occurrence msgHeatSend;
+            }
+        }
     }
     package <DSRE> 'DroneSystem_System Requirements' {
         private import MBSEMethodology::*;
