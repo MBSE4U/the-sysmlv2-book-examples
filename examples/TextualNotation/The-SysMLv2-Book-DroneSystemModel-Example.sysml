@@ -25,7 +25,6 @@ package <DSM> DroneSystemModel {
         doc /* Specifies that the system requirements depends on the base architecture. */
     }
     dependency DSPA, DSFA to DSRE;
-    package <DSUC> DroneSystem_UseCases;
 
     package <DSP> DroneSystem_Project {
         private import MBSEMethodology::*;
@@ -81,6 +80,7 @@ package <DSM> DroneSystemModel {
         }
     }
     package <DSD> DroneSystem_Domain {
+        item def ObservationArea;
         attribute def Coordinate;
     }
     package <DSS> DroneSystem_System {
@@ -102,6 +102,7 @@ package <DSM> DroneSystemModel {
                 port humidityPort : Interfaces::HumidityPort;
                 event occurrence msgHeatSend;
             }
+            part def Operator;
         }
         package Interfaces {
 
@@ -206,6 +207,24 @@ package <DSM> DroneSystemModel {
             }
         }
     }
+
+    package <DSUC> DroneSystem_UseCases {
+        use case def 'Observe area by drone' {
+            subject droneSystem : DSS::DroneSystem;
+            actor operator : DSS::Actors::Operator;
+            objective {
+                doc /* The drone system autonomously observes a defined area and reports any incidents. */
+            }
+            first start then specifyArea;
+            succession flow specifyArea.obsArea to flyToPosition.obsArea;
+            first flyToPosition then observeArea;
+            first observeArea then done;
+            perform action specifyArea { out item obsArea : DSD::ObservationArea; }
+            perform action flyToPosition { in item obsArea : DSD::ObservationArea; }
+            perform action observeArea;
+        }
+    }
+
     package <DSFA> 'DroneSystem_Functional Architecture';    
     package <DSLA> DroneSystem_LogicalArchitecture {
         part def DroneSystem {
@@ -296,8 +315,8 @@ package <DSM> DroneSystemModel {
             attribute maxPowerUse :> ISQElectromagnetism::electricPower;
         }
         connection def PowerDistribution {
-            end producer [1] : PowerProducer;
-            end consumers [1..*] : PowerConsumer;
+            end [1] part producer : PowerProducer;
+            end [1..*] part consumers : PowerConsumer;
             assert constraint powerConsumption : PowerConstraint {
                 in part :>> powerProducer = producer;
                 in part :>> powerConsumers = consumers;
