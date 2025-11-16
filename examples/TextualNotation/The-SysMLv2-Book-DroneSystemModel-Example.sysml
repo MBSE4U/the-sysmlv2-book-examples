@@ -84,38 +84,49 @@ package <DSM> DroneSystemModel {
         attribute def Coordinate;
     }
     package <DSS> DroneSystem_System {
-        private import MBSEMethodology::*;
-        private import DSBA::*;
-        part def DroneSystemContext :> CommonUAVSystemContext {
+        part def DroneSystemContext :> DSBA::CommonUAVSystemContext {
             part droneSystem : DroneSystem :>> uavSystem;
             part environment : Actors::Environment :>> environment;
-            message heatExchange : HeatFlow from environment.msgHeatSend to droneSystem.msgHeatReceive;
-            flow heatExchangeFlow : HeatInterfaceFlow from environment.heatPort.heatEnergy to droneSystem.heatPort.heatEnergy;
+            message heatExchange : Interfaces::HeatFlow from environment.msgHeatSend to droneSystem.msgHeatReceive;
+            interface heatIF : Interfaces::HeatIF connect environment.heatPort to droneSystem.heatPort;
             flow environment.humidityPort.humidity to droneSystem.humidityPort.humidity;
         }
-        part def DroneSystem :> CommonUAVSystem {
-            port heatPort : ~HeatPort;
-            port humidityPort : ~HumidityPort;
+        part def DroneSystem :> DSBA::CommonUAVSystem {
+            port heatPort : ~Interfaces::HeatPort;
+            port humidityPort : ~Interfaces::HumidityPort;
             event occurrence msgHeatReceive;
-        }
-        port def HeatPort {
-            out item heatEnergy : ISQ::EnergyValue;
-        }
-        port def HumidityPort {
-            out item humidity;
-        }
-        abstract flow def HeatFlow {
-            ref item heat :> ISQ::heat :>> payload;
-        }
-        flow def HeatInterfaceFlow :> HeatFlow {
-            end heatPortSource : HeatPort;
-            end heatPortTarget : HeatPort;
         }
         package Actors {
             part def Environment :> DSBA::'UAV Environment' {
-                port heatPort : HeatPort;
-                port humidityPort : HumidityPort;
+                port heatPort : Interfaces::HeatPort;
+                port humidityPort : Interfaces::HumidityPort;
                 event occurrence msgHeatSend;
+            }
+        }
+        package Interfaces {
+
+            // Flows
+            abstract flow def HeatFlow {
+                ref item heat :> ISQ::heat :>> payload;
+            }
+            flow def HeatInterfaceFlow :> HeatFlow {
+                end heatPortSource : Interfaces::HeatPort;
+                end heatPortTarget : Interfaces::HeatPort;
+            }
+
+            // Interfaces
+            interface def HeatIF {
+                end envHeatPort : HeatPort;
+                end droneSystemHeatPort : ~HeatPort;
+                flow heatExchangeFlow : HeatInterfaceFlow from envHeatPort.heatEnergy to droneSystemHeatPort.heatEnergy;
+            }
+
+            // Ports
+            port def HeatPort {
+                out item heatEnergy : ISQ::EnergyValue;
+            }
+            port def HumidityPort {
+                out item humidity;
             }
         }
     }
