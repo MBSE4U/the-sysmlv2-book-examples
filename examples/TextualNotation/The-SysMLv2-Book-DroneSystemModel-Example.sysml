@@ -206,6 +206,27 @@ package <DSM> 'Drone System Model' {
                 }
             }
         }
+
+        part def DroneSystemContext :> UAVSBA::UAVSystemContext {
+            part droneSystem :>> uavSystem : DroneSystem;
+            use case observeAreaByDrone : DSUC::'Observe area by drone' {
+                subject :>> droneSystem :> droneSystem.drones;
+                actor :>> operator :> operator;
+                objective {}
+            }
+            use case chargeDrone : DSUC::'Charge drone' {
+                subject :>> droneSystem :> droneSystem.drones;
+                actor :>> operator :> operator;
+            }
+        }
+        part def DroneSystem :> UAVSBA::UAVSystem {
+            doc /* A smart, autonomous aerial system that delivers data, transport, or surveillance—fast, precise, and seamlessly connected. */
+            part drones :> uavs;
+            action specifyArea;
+            action flyDroneToPosition;
+            action observeAreaByDrone;
+        }
+
     }
     package <DSUC> 'Drone System UseCases' {
         use case def 'Observe area by drone' {
