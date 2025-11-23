@@ -1,4 +1,4 @@
-package <DSM> DroneSystemModel {
+package <DSM> 'Drone System Model' {
     doc
     /* 
      *  Root package of the Drone System Model Example model from "The SysML v2 Book" published by MBSE4U.
@@ -26,7 +26,7 @@ package <DSM> DroneSystemModel {
     }
     dependency DSPA, DSFA to DSRE;
 
-    package <DSP> DroneSystem_Project {
+    package <DSP> 'Drone System Project' {
         private import MBSEMethodology::*;
         occurrence def UAVProject {
             part stakeholders [*] : CommonStakeholder;
@@ -59,7 +59,7 @@ package <DSM> DroneSystemModel {
             }
         }
     }
-    package <DSBA> 'DroneSystem_Base Architecture' {
+    package <DSBA> 'Drone System Base Architecture' {
         part def CommonUAVSystemContext {
             part uavSystem : CommonUAVSystem;
             part environment : 'UAV Environment';
@@ -79,11 +79,11 @@ package <DSM> DroneSystemModel {
             attribute windSpeed :> ISQSpaceTime::speed;
         }
     }
-    package <DSD> DroneSystem_Domain {
+    package <DSD> 'Drone System Domain' {
         item def ObservationArea;
         attribute def Coordinate;
     }
-    package <DSS> DroneSystem_System {
+    package <DSS> 'Drone System' {
         part def DroneSystemContext :> DSBA::CommonUAVSystemContext {
             part droneSystem : DroneSystem :>> uavSystem;
             part environment : Actors::Environment :>> environment;
@@ -131,7 +131,7 @@ package <DSM> DroneSystemModel {
             }
         }
     }
-    package <DSRE> 'DroneSystem_System Requirements' {
+    package <DSRE> 'Drone System Requirements' {
         private import MBSEMethodology::*;
         private import DSP::*;
         private import DSBA::*;
@@ -207,8 +207,7 @@ package <DSM> DroneSystemModel {
             }
         }
     }
-
-    package <DSUC> DroneSystem_UseCases {
+    package <DSUC> 'Drone System UseCases' {
         use case def 'Observe area by drone' {
             subject droneSystem : DSS::DroneSystem;
             actor operator : DSS::Actors::Operator;
@@ -224,16 +223,15 @@ package <DSM> DroneSystemModel {
             perform action observeArea;
         }
     }
-
-    package <DSFA> 'DroneSystem_Functional Architecture';    
-    package <DSLA> DroneSystem_LogicalArchitecture {
+    package <DSFA> 'Drone System Functional Architecture';    
+    package <DSLA> 'Drone System Logical Architecture' {
         part def DroneSystem {
             part navigationModule;
             part flightModule;
             part missionModule;
         }
     }    
-    package <DSPA> 'DroneSystem_Physical Architecture' {
+    package <DSPA> 'Drone System Physical Architecture' {
         private import DSRE::*;
         item def Payload {
             attribute mass :> ISQBase::mass = box.mass + content.mass;
