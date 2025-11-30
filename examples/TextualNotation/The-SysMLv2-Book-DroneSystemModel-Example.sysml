@@ -87,7 +87,7 @@ package <DSM> 'Drone System Model' {
         part def DroneSystemContext :> DSBA::CommonUAVSystemContext {
             part droneSystem : DroneSystem :>> uavSystem;
             part environment : Actors::Environment :>> environment;
-            message heatExchange : Interfaces::HeatFlow from environment.msgHeatSend to droneSystem.msgHeatReceive;
+            message heatExchange : Interfaces::HeatFlow of Interfaces::Heat from environment.msgHeatSend to droneSystem.msgHeatReceive;
             interface heatIF : Interfaces::HeatIF connect environment.heatPort to droneSystem.heatPort;
             flow environment.humidityPort.humidity to droneSystem.humidityPort.humidity;
         }
@@ -108,7 +108,7 @@ package <DSM> 'Drone System Model' {
 
             // Flows
             abstract flow def HeatFlow {
-                ref item heat :> ISQ::heat :>> payload;
+                ref item heat : Heat :>> payload;
             }
             flow def HeatInterfaceFlow :> HeatFlow {
                 end heatPortSource : Interfaces::HeatPort;
@@ -124,10 +124,14 @@ package <DSM> 'Drone System Model' {
 
             // Ports
             port def HeatPort {
-                out item heatEnergy : ISQ::EnergyValue;
+                out item heatEnergy : Heat;
             }
             port def HumidityPort {
                 out item humidity;
+            }
+
+            item def Heat {
+                attribute heatEnergy :> ISQ::heat;
             }
         }
     }
