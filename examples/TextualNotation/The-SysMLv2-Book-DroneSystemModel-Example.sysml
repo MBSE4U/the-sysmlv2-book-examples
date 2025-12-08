@@ -87,6 +87,8 @@ package <DSM> 'Drone System Model' {
         part def DroneSystemContext :> DSBA::CommonUAVSystemContext {
             part droneSystem : DroneSystem :>> uavSystem;
             part environment : Actors::Environment :>> environment;
+            part operator : Actors::Operator;
+
             message heatExchange : Interfaces::HeatFlow of Interfaces::Heat from environment.msgHeatSend to droneSystem.msgHeatReceive;
             interface heatIF : Interfaces::HeatIF connect environment.heatPort to droneSystem.heatPort;
             flow environment.humidityPort.humidity to droneSystem.humidityPort.humidity;
@@ -210,27 +212,6 @@ package <DSM> 'Drone System Model' {
                 }
             }
         }
-
-        part def DroneSystemContext :> UAVSBA::UAVSystemContext {
-            part droneSystem :>> uavSystem : DroneSystem;
-            use case observeAreaByDrone : DSUC::'Observe area by drone' {
-                subject :>> droneSystem :> droneSystem.drones;
-                actor :>> operator :> operator;
-                objective {}
-            }
-            use case chargeDrone : DSUC::'Charge drone' {
-                subject :>> droneSystem :> droneSystem.drones;
-                actor :>> operator :> operator;
-            }
-        }
-        part def DroneSystem :> UAVSBA::UAVSystem {
-            doc /* A smart, autonomous aerial system that delivers data, transport, or surveillance—fast, precise, and seamlessly connected. */
-            part drones :> uavs;
-            action specifyArea;
-            action flyDroneToPosition;
-            action observeAreaByDrone;
-        }
-
     }
     package <DSUC> 'Drone System UseCases' {
         use case def 'Observe area by drone' {
@@ -256,7 +237,8 @@ package <DSM> 'Drone System Model' {
             part missionModule;
         }
     }    
-    package <DSPA> 'Drone System Physical Architecture' {
+    package <DSPA> 'Drone System Product Architecture' {
+        private import MBSEMethodology::*;
         private import DSRE::*;
         item def Payload {
             attribute mass :> ISQBase::mass = box.mass + content.mass;
@@ -351,6 +333,11 @@ package <DSM> 'Drone System Model' {
             }
         }
         part def Battery {
+            @Status {
+                status = StatusKind::draft; 
+                priority = LevelKind::high; 
+                responsiblePerson = "Vince";
+            }
             attribute voltage :> ISQElectromagnetism::voltage;
             port energyOutPort : EnergyPort {
                 attribute :>> voltage = 22.2 [SI::V];
@@ -393,6 +380,31 @@ package <DSM> 'Drone System Model' {
             }
         }
     }
+    package PartsCatalogue {
+        private import 'Drone System Logical Architecture'::**;
+        private import 'Drone System Product Architecture'::**;
+        filter @SysML::PartUsage;
+    }
+    package ApprovedPartsCatalogue {
+        private import 'Drone System Logical Architecture'::**;
+        private import 'Drone System Product Architecture'::**;
+
+        filter @SysML::PartUsage and
+            @MBSEMethodology::Status::status == MBSEMethodology::StatusKind::approved;
+    }    
+    package ApprovedLogicalPartsCatalogue {
+        private import 'Drone System Logical Architecture'::** 
+            [@MBSEMethodology::Status::status == MBSEMethodology::StatusKind::approved];
+        private import 'Drone System Product Architecture'::**;
+
+        filter @SysML::PartUsage;
+    }    
+    package MechanicalPartsCatalogue {
+        private import 'Drone System Logical Architecture'::**;
+        private import 'Drone System Product Architecture'::**;
+
+        filter @SysML::PartUsage and (@SysML::PartUsage::shape != null);
+    }    
 }
 package 'Surveillance Drone Product' {
     private import DSM::DSPA::*;
@@ -437,4 +449,15 @@ package MBSEMethodology {
         legal;
         physical;
     }
+    metadata def Status {
+        attribute status : StatusKind default StatusKind::idea;
+        attribute priority : LevelKind default LevelKind::middle;
+        attribute responsiblePerson : ScalarValues::String default "Vince";
+    }
+    enum def StatusKind {
+        idea;
+        draft;
+        review;
+        approved;
+    }    
 }

@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "vscode-tools": {
+      "command": "node",
+      "args": [
+        "c:\\Users\\TimW\\.vscode\\extensions\\vpathai.vpath-sysml-agent-0.3.201\\dist\\mcp\\proxy\\index.js",
+        "--socket-path",
+        "\\\\?\\pipe\\vscode-mcp-31740"
+      ],
+      "disabled": false
+    }
+  },
+  "folderTrust": true
+}
